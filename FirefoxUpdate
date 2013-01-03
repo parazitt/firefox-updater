@@ -1,0 +1,48 @@
+#!/bin/bash
+
+#    Copyright (C) 2011 parazitt <@info at parazitt.ir>
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of the GNU General Public License as
+#    published by the Free Software Foundation; either version 2 of
+#    the License or (at your option) version 3 or any later version.
+#
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, see http://www.gnu.org/licenses/
+
+Main(){
+  FILE=`zenity --file-selection --title="Select New Firefox Archive"`
+        case $? in
+                 1)
+                        echo "No file selected.";exit;;
+                -1)
+                        echo "No file selected.";exit;;
+        esac
+        TEXT=$(zenity --entry --title="Firefox Version" --text="Enter identity Firefox version:\t\t\t\nlike: 3.6.7.1 or 4.0.2");
+	if [ $TEXT = "" ]; then
+          echo "No Version entered";exit;
+        fi
+	ANSWER=`zenity --question --text "Do you like BackUp current version?"; echo $?`;
+	if [[ $ANSWER -eq 1 ]]
+	then
+		echo "you don't need make backup";
+	else
+ 	        gksu "mv /usr/bin/firefox  /usr/bin/firefox.old";
+		echo "Baked up"
+	fi;
+	cd "/tmp";
+	tar xvf  $FILE;
+	gksu "cp -r /tmp/firefox /usr/lib/firefox-$TEXT"
+	gksu "ln -s /usr/lib/firefox-$TEXT/firefox /usr/bin/firefox-$TEXT"
+	gksu "unlink /usr/bin/firefox"
+	gksu "ln -s /usr/bin/firefox-$TEXT /usr/bin/firefox"
+	rm -R /tmp/firefox
+	zenity --info --text="Update complete. Updated firefox to $TEXT."
+}
+Main
